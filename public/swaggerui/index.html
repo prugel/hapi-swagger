@@ -99,6 +99,8 @@
                 {{#if hapiSwagger.uiCompleteScript}}
                     {{{hapiSwagger.uiCompleteScript}}}
                 {{/if}}
+
+                clearVersion();
             },
             onFailure: function (data) {
                 log("Unable to Load SwaggerUI", data);
@@ -110,7 +112,6 @@
             validatorUrl: validatorUrl,
             jsonEditor: {{#if hapiSwagger.jsonEditor}}true{{else}}false{{/if}}
         });
-
 
         function addApiKeyAuthorization() {
             if($('#input_apiKey')){
@@ -156,6 +157,28 @@
                 console.log.apply(console, arguments);
             }
         }
+
+        var apis = {};
+        function clearVersion() {
+            var $select = $('select#version');
+            $('ul#resources').children().each(function() {
+                var $title = $(this).find('.heading h2 a');
+                var version = (/v[\d]+/.exec($title.text()) || ['empty version'])[0];
+                apis[version] = apis[version] || [];
+                apis[version].push($(this));
+                $select.append($('<option></option>').val(version).html(version));
+                $title.text($title.text().replace(/v[0-9]+\//, ''));
+                $(this).find('.endpoints .heading .path a').each(function() {
+                    $(this).text($(this).text().replace(/v[0-9]+\//, ''));
+                });
+            });
+            $select.change(function() {
+                var version = $(this).val();
+                $('ul#resources').children().hide();
+                apis[version].forEach(function(item) { item.show(); });
+            });
+            $select.val('{{hapiSwagger.defaultVersion}}').trigger('change');
+        }
   });
 
 
@@ -167,6 +190,9 @@
 <div id='header'>
     <div class="swagger-ui-wrap">
         <a id="logo" href="http://swagger.io">swagger</a>
+        <div style="float: right">
+            <select id="version"></select>
+        </div>
         <form id='api_selector' onsubmit="return false">
             <div class='input'><input placeholder="api_key" id="input_apiKey" style="display:none" name="apiKey" type="text"/></div>
             <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" style="display:none" name="baseUrl" type="text"/></div>
