@@ -158,26 +158,29 @@
             }
         }
 
-        var apis = {};
         function clearVersion() {
             var $select = $('select#version');
             $('ul#resources').children().each(function() {
                 var $title = $(this).find('.heading h2 a');
-                var version = (/v[\d]+/.exec($title.text()) || ['empty version'])[0];
-                apis[version] = apis[version] || [];
-                apis[version].push($(this));
+                var version = (/v[\d]+/.exec($title.text()) || ['v0'])[0];
+                $(this).addClass(version);
                 $select.append($('<option></option>').val(version).html(version));
-                $title.text($title.text().replace(/v[0-9]+\//, ''));
+                $title.text($title.text().replace(/v[\d]+\//, ''));
                 $(this).find('.endpoints .heading .path a').each(function() {
-                    $(this).text($(this).text().replace(/v[0-9]+\//, ''));
+                    $(this).text($(this).text().replace(/v[\d]+\//, ''));
                 });
             });
             $select.change(function() {
                 var version = $(this).val();
-                $('ul#resources').children().hide();
-                apis[version].forEach(function(item) { item.show(); });
+                $('ul#resources .resource').hide();
+                $('.'+version).show();
             });
-            $select.val('{{hapiSwagger.defaultVersion}}').trigger('change');
+            $select.find('option').detach().sort(function(a,b) {
+                var at = $(a).text().match(/v([\d]+)/)[1] * 1;
+                var bt = $(b).text().match(/v([\d]+)/)[1] * 1;
+                return at > bt;
+            }).appendTo($select);
+            $select.find('option:last').attr('selected', 'selected').trigger('change');
         }
   });
 

@@ -64,7 +64,7 @@ const swaggerOptions = {
         title: 'Test API Documentation',
         description: 'This is a sample example of API documentation.'
     },
-    defaultVersion: 'v2',
+    // defaultVersion: 'v2',
     // pathReplacements: [
     //     {
     //         replaceIn: 'all',
@@ -138,34 +138,6 @@ server.register(
             }
         ];
 
-        // Add a versioned route - which is actually two routes with prefix '/v1' and '/v2'. Not only the
-        // handlers are different, but also the route definition itself (like here with response validation).
-        server.route({
-            method: 'GET',
-            path: '/api/v1/users',
-            handler: function(request, reply) {
-                return reply(usersVersion1);
-            },
-            config: {
-                tags: ['api', 'users v1'],
-                plugins: {
-                    'hapi-swagger': {
-                        responses: {
-                            '200': {
-                                description: 'Success',
-                                schema: usersVersion1Model
-                            }
-                        }
-                    }
-                },
-                validate: {
-                    headers: Joi.object({
-                        accept: Joi.string()
-                    }).unknown()
-                }
-            }
-        });
-
         server.route({
             method: 'GET',
             path: '/api/v2/users',
@@ -220,6 +192,37 @@ server.register(
                 }
             }
         });
+
+
+        // Add a versioned route - which is actually two routes with prefix '/v1' and '/v2'. Not only the
+        // handlers are different, but also the route definition itself (like here with response validation).
+        server.route({
+            method: 'GET',
+            path: '/api/v1/users',
+            handler: function(request, reply) {
+                return reply(usersVersion1);
+            },
+            config: {
+                tags: ['api', 'users v1'],
+                plugins: {
+                    'hapi-swagger': {
+                        responses: {
+                            '200': {
+                                description: 'Success',
+                                schema: usersVersion1Model
+                            }
+                        }
+                    }
+                },
+                validate: {
+                    headers: Joi.object({
+                        accept: Joi.string()
+                    }).unknown()
+                }
+            }
+        });
+
+
 
         // Add a versioned route - This is a simple version of the '/users' route where just the handlers
         // differ and even those just a little. It maybe is the preferred option if just the formatting of
