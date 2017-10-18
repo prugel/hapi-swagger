@@ -101,6 +101,8 @@
                 {{/if}}
 
                 clearVersion();
+
+                swaggerUi.api.clientAuthorizations.add("unique-id", new SwaggerClient.ApiKeyAuthorization("unique-id", "1234", "header"));
             },
             onFailure: function (data) {
                 log("Unable to Load SwaggerUI", data);
@@ -123,6 +125,7 @@
                     var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization(auth.name, key, auth.in);
                     window.swaggerUi.api.clientAuthorizations.add(auth.name, apiKeyAuth);
                     log("added key " + key);
+                    log(window.swaggerUi.api);
                 }
             }
         }
@@ -159,17 +162,23 @@
         }
 
         function clearVersion() {
+            var options = [];
             var $select = $('select#version');
             $('ul#resources').children().each(function() {
                 var $title = $(this).find('.heading h2 a');
                 var version = (/v[\d]+/.exec($title.text()) || ['v0'])[0];
                 $(this).addClass(version);
-                $select.append($('<option></option>').val(version).html(version));
+                if (options.indexOf(version) === -1) {
+                  options.push(version);
+                  $select.append($('<option></option>').val(version).html(version));
+                }
                 $title.text($title.text().replace(/v[\d]+\//, ''));
                 $(this).find('.endpoints .heading .path a').each(function() {
                     $(this).text($(this).text().replace(/v[\d]+\//, ''));
                 });
+                $(this).find('.endpoints').hide();
             });
+            options = null;
             $select.change(function() {
                 var version = $(this).val();
                 $('ul#resources .resource').hide();
@@ -181,6 +190,26 @@
                 return at > bt;
             }).appendTo($select);
             $select.find('option:last').attr('selected', 'selected').trigger('change');
+
+            var order = {
+                get: 1,
+                post: 2,
+                put: 3,
+                patch: 4,
+                delete: 5,
+            }
+            sortByMethod(order);
+        }
+
+        function sortByMethod(order) {
+            $('ul#resources').children().each(function() {
+                var $endpoints = $(this).find('.endpoints');
+                $endpoints.children().detach().sort(function(a, b) {
+                  var at = $(a).find('.http_method a').text();
+                  var bt = $(b).find('.http_method a').text();
+                  return order[at] > order[bt];
+              }).appendTo($endpoints);
+            });
         }
   });
 
@@ -193,12 +222,10 @@
 <div id='header'>
     <div class="swagger-ui-wrap">
         <a id="logo" href="http://swagger.io">swagger</a>
-        <div style="float: right">
-            <select id="version"></select>
-        </div>
         <form id='api_selector' onsubmit="return false">
             <div class='input'><input placeholder="api_key" id="input_apiKey" style="display:none" name="apiKey" type="text"/></div>
             <div class='input'><input placeholder="http://example.com/api" id="input_baseUrl" style="display:none" name="baseUrl" type="text"/></div>
+            <select id="version"></select>
             <!--
             <div class='input'><a id="explore" href="#" data-sw-translate>Explore</a></div>
             -->

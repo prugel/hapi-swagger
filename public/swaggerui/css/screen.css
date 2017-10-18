@@ -1302,3 +1302,14 @@
 .swagger-section .swagger-expand:before {
   content: "+";
 }
+select {
+    min-width: 80px;
+    padding-left: 10px;
+    font-size: 1.3em;
+    color: #333;
+    border: 1px solid #006fff;
+    border-radius: 3px;
+}
+select::-ms-expand {
+   display: none;
+}

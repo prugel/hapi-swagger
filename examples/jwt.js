@@ -33,6 +33,30 @@ var people = {
     }
 };
 
+const goodOptions = {
+    ops: {
+        interval: 1000
+    },
+    reporters: {
+        console: [
+            {
+                module: 'good-squeeze',
+                name: 'Squeeze',
+                args: [
+                    {
+                        log: '*',
+                        response: '*'
+                    }
+                ]
+            },
+            {
+                module: 'good-console'
+            },
+            'stdout'
+        ]
+    }
+};
+
 var privateKey = 'hapi hapi joi joi';
 var token = jwt.sign({ id: 56732 }, privateKey, { algorithm: 'HS256' });
 
@@ -58,6 +82,10 @@ server.register(
         Vision,
         Blipp,
         {
+            register: require('good'),
+            options: goodOptions
+        },
+        {
             register: HapiSwagger,
             options: swaggerOptions
         }
@@ -73,7 +101,7 @@ server.register(
             verifyOptions: { algorithms: ['HS256'] } // pick a strong algorithm
         });
 
-        server.auth.default('jwt');
+        // server.auth.default('jwt');
 
         server.route([
             {

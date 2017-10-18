@@ -64,6 +64,13 @@ const swaggerOptions = {
         title: 'Test API Documentation',
         description: 'This is a sample example of API documentation.'
     },
+    securityDefinitions: {
+        jwt: {
+            type: 'apiKey',
+            name: 'Authorization',
+            in: 'header'
+        }
+    },
     // defaultVersion: 'v2',
     // pathReplacements: [
     //     {
@@ -148,6 +155,7 @@ server.register(
                 tags: ['api', 'users v2'],
                 plugins: {
                     'hapi-swagger': {
+                        security: [{ jwt: [] }],
                         responses: {
                             '200': {
                                 description: 'Success',
