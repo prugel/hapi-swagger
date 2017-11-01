@@ -128,7 +128,10 @@
                     log(window.swaggerUi.api);
                 }
             }
+
+            window.sessionStorage.setItem('apiKey', $('#input_apiKey')[0].value);
         }
+        $('#input_apiKey')[0].value = window.sessionStorage.getItem('apiKey');
 
 		function getUrlVars() {
 			var vars = [], hash;
@@ -142,7 +145,13 @@
 			return vars;
 		}
 
+        function selectAll() {
+          $(this).select();
+        }
+
         $('#input_apiKey').change(addApiKeyAuthorization);
+        $('#input_apiKey').click(selectAll);
+
 
         /*
         // if you have an apiKey you would like to pre-populate on the page for demonstration purposes...
