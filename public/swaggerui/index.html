@@ -102,7 +102,7 @@
 
                 clearVersion();
 
-                swaggerUi.api.clientAuthorizations.add("unique-id", new SwaggerClient.ApiKeyAuthorization("unique-id", "1234", "header"));
+                swaggerUi.api.clientAuthorizations.add("unique-id", new SwaggerClient.ApiKeyAuthorization("unique-id", "clingstack", "header"));
             },
             onFailure: function (data) {
                 log("Unable to Load SwaggerUI", data);
@@ -124,14 +124,14 @@
                     }
                     var apiKeyAuth = new SwaggerClient.ApiKeyAuthorization(auth.name, key, auth.in);
                     window.swaggerUi.api.clientAuthorizations.add(auth.name, apiKeyAuth);
-                    log("added key " + key);
-                    log(window.swaggerUi.api);
+                    // log("added key " + key);
+                    // log(window.swaggerUi.api);
+                    window.localStorage.setItem('apiKey', $('#input_apiKey')[0].value);
                 }
             }
 
-            window.sessionStorage.setItem('apiKey', $('#input_apiKey')[0].value);
         }
-        $('#input_apiKey')[0].value = window.sessionStorage.getItem('apiKey');
+        $('#input_apiKey')[0].value = window.localStorage.getItem('apiKey');
 
 		function getUrlVars() {
 			var vars = [], hash;
@@ -170,6 +170,19 @@
             }
         }
 
+        (function(swaggerUi) {
+          var origOpen = XMLHttpRequest.prototype.open;
+          XMLHttpRequest.prototype.open = function() {
+            this.addEventListener('load', function() {
+              var new_access_token = this.getResponseHeader('new_access_token');
+              var new_refresh_token = this.getResponseHeader('new_refresh_token');
+              new_access_token && swaggerUi.api.clientAuthorizations.add("access_token", new SwaggerClient.ApiKeyAuthorization("access_token", new_access_token, "header"));
+              new_refresh_token && swaggerUi.api.clientAuthorizations.add("refresh_token", new SwaggerClient.ApiKeyAuthorization("refresh_token", new_refresh_token, "header"));
+            });
+            origOpen.apply(this, arguments);
+          };
+        })(swaggerUi);
+
         function clearVersion() {
             var options = [];
             var $select = $('select#version');
@@ -196,7 +209,8 @@
             $select.find('option').detach().sort(function(a,b) {
                 var at = $(a).text().match(/v([\d]+)/)[1] * 1;
                 var bt = $(b).text().match(/v([\d]+)/)[1] * 1;
-                return at > bt;
+                return at > bt ? 1 :
+                       at < bt ? -1 : 0;
             }).appendTo($select);
             $select.find('option:last').attr('selected', 'selected').trigger('change');
 
@@ -216,7 +230,8 @@
                 $endpoints.children().detach().sort(function(a, b) {
                   var at = $(a).find('.http_method a').text();
                   var bt = $(b).find('.http_method a').text();
-                  return order[at] > order[bt];
+                  return order[at] > order[bt] ? 1 :
+                         order[at] < order[bt] ? -1 :  0;
               }).appendTo($endpoints);
             });
         }
